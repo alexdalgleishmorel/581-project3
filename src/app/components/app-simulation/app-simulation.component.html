@@ -1,0 +1,19 @@
+<div class="content-title">Mobile App View</div>
+<div class="outer-content" *ngIf="currentUser$ | async as currentUser">
+  <div class="phone-border">
+    <div class="inner-content">
+      <div class="welcome">
+        <ion-text color="dark"><h2>Welcome</h2></ion-text>
+        <ion-text color="primary"><h2><strong>{{currentUser.name}}</strong></h2></ion-text>
+      </div>
+      <div class="likes-title">
+        <ion-text color="secondary"><h2>Likes <ion-icon name="heart-outline"></ion-icon></h2></ion-text>
+      </div>
+      <div class="accessory-list">
+        <a *ngFor="let accessory of currentUser.likedAccessories" class="accessory" href="https://www.aritzia.com/" target="_blank">
+          <img [src]="accessory.imageUrl" />
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

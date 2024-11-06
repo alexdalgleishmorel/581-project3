@@ -1,0 +1,17 @@
+.content {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: row;
+}
+
+.mirror-container {
+  width: 70%;
+  height: 100%;
+}
+
+.app-simulation-container {
+  width: 30%;
+  height: 100%;
+}
