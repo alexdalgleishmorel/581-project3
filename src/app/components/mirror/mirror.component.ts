@@ -8,7 +8,11 @@ import * as faceapi from 'face-api.js';
 })
 export class MirrorComponent implements OnInit {
   @ViewChild('video', { static: true }) video!: ElementRef;
-  @ViewChild('overlay', { static: true }) overlay!: ElementRef;
+
+  isHappy = false;
+  isSad = false;
+  private expressionStartTime: number | null = null;
+  private currentExpression: string | null = null;
 
   async ngOnInit() {
     await this.loadModels();
@@ -27,65 +31,58 @@ export class MirrorComponent implements OnInit {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       this.video.nativeElement.srcObject = stream;
-  
+
       this.video.nativeElement.onloadedmetadata = () => {
-        // Start detecting faces once the video has metadata loaded
-        this.detectFaces();
+        this.detectExpressions();
       };
     } catch (error) {
       console.error('Error accessing webcam:', error);
     }
   }
 
-  detectFaces() {
-    const canvas = this.overlay.nativeElement;
-  
-    const videoWidth = this.video.nativeElement.videoWidth;
-    const videoHeight = this.video.nativeElement.videoHeight;
-  
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
-  
-    const displaySize = { width: videoWidth, height: videoHeight };
-    faceapi.matchDimensions(canvas, displaySize);
-  
+  detectExpressions() {
     setInterval(async () => {
       const detections = await faceapi
         .detectAllFaces(this.video.nativeElement, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceExpressions(); // Detect expressions
-  
-      const resizedDetections = faceapi.resizeResults(detections, displaySize);
-  
-      // Clear the overlay and draw new detections
-      const context = canvas.getContext('2d', { willReadFrequently: true });
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      faceapi.draw.drawDetections(canvas, resizedDetections);
-      faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-  
-      // Draw expressions on the canvas or log them
-      resizedDetections.forEach(detection => {
+        .withFaceExpressions();
+
+      detections.forEach(detection => {
         const { expressions } = detection;
-        const expression = getTopExpression(expressions); // Get top expression
-  
-        context.font = '16px Arial';
-        context.fillStyle = 'red';
-        context.fillText(expression, detection.detection.box.x, detection.detection.box.y - 10);
+        const topExpression = this.getTopExpression(expressions);
+
+        // Track expression duration and set isHappy or isSad accordingly
+        this.trackExpression(topExpression);
       });
     }, 100);
   }
-}
 
-function getTopExpression(expressions: faceapi.FaceExpressions): string {
-  let topExpression = '';
-  let maxProbability = 0;
-
-  for (const [expression, probability] of Object.entries(expressions)) {
-    if (probability > maxProbability) {
-      maxProbability = probability;
-      topExpression = expression;
-    }
+  // Helper to get the dominant expression
+  getTopExpression(expressions: faceapi.FaceExpressions): string {
+    return Object.entries(expressions)
+      .reduce((a, b) => (b[1] > a[1] ? b : a))[0];
   }
 
-  return `${topExpression} (${(maxProbability * 100).toFixed(1)}%)`;
+  // Track expression for duration and toggle variables if condition is met
+  trackExpression(expression: string) {
+    const now = Date.now();
+
+    if (expression !== this.currentExpression) {
+      // Reset the timer if expression changes
+      this.currentExpression = expression;
+      this.expressionStartTime = now;
+    } else if (this.expressionStartTime && now - this.expressionStartTime >= 1000) {
+      // Check if expression has been constant for 1 second
+      this.isHappy = expression === 'happy';
+      this.isSad = expression === 'sad';
+
+      // Reset other states if necessary
+      if (this.isHappy) this.isSad = false;
+      if (this.isSad) this.isHappy = false;
+
+      // Reset the timer after setting the expression
+      this.expressionStartTime = now;
+
+      console.log(this.currentExpression);
+    }
+  }
 }
