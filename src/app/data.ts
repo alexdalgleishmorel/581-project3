@@ -2,27 +2,27 @@ export const REGISTERED_ACCESSORIES: Accessory[] = [
     {
         id: 'afasf',
         name: 'hoodie',
-        imageUrl: '/assets/wood-texture.jpg'
+        imageUrl: '/assets/wood-texture.jpeg'
     },
     {
         id: 'sdfvsdv',
         name: 'shirt',
-        imageUrl: '/assets/wood-texture.jpg'
+        imageUrl: '/assets/wood-texture.jpeg'
     },
     {
         id: 'sadgfdsg',
         name: 'necklace',
-        imageUrl: '/assets/wood-texture.jpg'
+        imageUrl: '/assets/wood-texture.jpeg'
     },
     {
         id: 'ddsfgsdgsd',
         name: 'hat',
-        imageUrl: '/assets/wood-texture.jpg'
+        imageUrl: '/assets/wood-texture.jpeg'
     },
     {
         id: 'asfgsdsv',
         name: 'scarf',
-        imageUrl: '/assets/wood-texture.jpg'
+        imageUrl: '/assets/wood-texture.jpeg'
     }
 ];
 
