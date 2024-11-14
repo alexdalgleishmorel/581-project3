@@ -8,15 +8,19 @@ import * as faceapi from 'face-api.js';
 })
 export class MirrorComponent implements OnInit {
   @ViewChild('video', { static: true }) video!: ElementRef;
+  @ViewChild('overlay', { static: true }) overlay!: ElementRef;
 
   isHappy = false;
   isSad = false;
+  userDistance = 0;
   private expressionStartTime: number | null = null;
   private currentExpression: string | null = null;
+  private overlayImage = new Image();
 
   async ngOnInit() {
     await this.loadModels();
     this.startVideo();
+    this.overlayImage.src = '/assets/wood-texture.jpeg'; // Path to your overlay image
   }
 
   async loadModels() {
@@ -41,48 +45,75 @@ export class MirrorComponent implements OnInit {
   }
 
   detectExpressions() {
+    const canvas = this.overlay.nativeElement;
+    const videoWidth = this.video.nativeElement.videoWidth;
+    const videoHeight = this.video.nativeElement.videoHeight;
+  
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+  
+    const displaySize = { width: videoWidth, height: videoHeight };
+    faceapi.matchDimensions(canvas, displaySize);
+  
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+  
+    // Set desired dimensions for the overlay image
+    const overlayWidth = 100;
+    const overlayHeight = 100;
+  
+    // Reference face width at a known distance (e.g., 1 meter)
+    const referenceFaceWidth = 120; // Adjust based on your setup
+    const referenceDistance = 100; // Reference distance in centimeters
+  
     setInterval(async () => {
       const detections = await faceapi
         .detectAllFaces(this.video.nativeElement, new faceapi.TinyFaceDetectorOptions())
         .withFaceExpressions();
-
+  
+      context.clearRect(0, 0, canvas.width, canvas.height);
+  
       detections.forEach(detection => {
         const { expressions } = detection;
         const topExpression = this.getTopExpression(expressions);
-
+  
         // Track expression duration and set isHappy or isSad accordingly
         this.trackExpression(topExpression);
+  
+        // Get the position and dimensions of the detected face
+        const { x, y, width, height } = detection.detection.box;
+  
+        // Estimate distance based on face width
+        this.userDistance = (referenceFaceWidth / width) * referenceDistance;
+  
+        // Position the overlay image based on the face position
+        const overlayX = x + width / 2 - overlayWidth / 2;
+        const overlayY = y - overlayHeight - 10;
+  
+        // Draw the overlay image
+        context.drawImage(this.overlayImage, overlayX, overlayY, overlayWidth, overlayHeight);
       });
     }, 100);
-  }
+  }  
 
-  // Helper to get the dominant expression
   getTopExpression(expressions: faceapi.FaceExpressions): string {
     return Object.entries(expressions)
       .reduce((a, b) => (b[1] > a[1] ? b : a))[0];
   }
 
-  // Track expression for duration and toggle variables if condition is met
   trackExpression(expression: string) {
     const now = Date.now();
 
     if (expression !== this.currentExpression) {
-      // Reset the timer if expression changes
       this.currentExpression = expression;
       this.expressionStartTime = now;
     } else if (this.expressionStartTime && now - this.expressionStartTime >= 1000) {
-      // Check if expression has been constant for 1 second
       this.isHappy = expression === 'happy';
       this.isSad = expression === 'sad';
 
-      // Reset other states if necessary
       if (this.isHappy) this.isSad = false;
       if (this.isSad) this.isHappy = false;
 
-      // Reset the timer after setting the expression
       this.expressionStartTime = now;
-
-      console.log(this.currentExpression);
     }
   }
 }
