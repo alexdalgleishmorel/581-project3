@@ -1,5 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as faceapi from 'face-api.js';
+import { PROXIMITY_THRESHOLD } from 'src/app/data';
+
+import { DataService } from 'src/app/data.service';
 
 @Component({
   selector: 'mirror',
@@ -13,14 +16,18 @@ export class MirrorComponent implements OnInit {
   isHappy = false;
   isSad = false;
   userDistance = 0;
-  private expressionStartTime: number | null = null;
   private currentExpression: string | null = null;
   private overlayImage = new Image();
+  private overlayImageWidth = 100;
+  private overlayImageHeight = 100;
+  private overlayImageOffset = 10;
+
+  constructor(private dataService: DataService) {}
 
   async ngOnInit() {
     await this.loadModels();
+    this.updateOverlayImage();
     this.startVideo();
-    this.overlayImage.src = '/assets/wood-texture.jpeg'; // Path to your overlay image
   }
 
   async loadModels() {
@@ -57,11 +64,6 @@ export class MirrorComponent implements OnInit {
   
     const context = canvas.getContext('2d', { willReadFrequently: true });
   
-    // Set desired dimensions for the overlay image
-    const overlayWidth = 100;
-    const overlayHeight = 100;
-  
-    // Reference face width at a known distance (e.g., 1 meter)
     const referenceFaceWidth = 120; // Adjust based on your setup
     const referenceDistance = 100; // Reference distance in centimeters
   
@@ -80,20 +82,26 @@ export class MirrorComponent implements OnInit {
         this.trackExpression(topExpression);
   
         // Get the position and dimensions of the detected face
-        const { x, y, width, height } = detection.detection.box;
+        const { x, y, width } = detection.detection.box;
   
         // Estimate distance based on face width
-        this.userDistance = (referenceFaceWidth / width) * referenceDistance;
+        const newDistance = (referenceFaceWidth / width) * referenceDistance;
+
+        if (proximityChange(this.userDistance, newDistance)) {
+          this.userDistance = newDistance;
+          this.updateOverlayImage();
+        }
+
+        this.userDistance = newDistance;
   
-        // Position the overlay image based on the face position
-        const overlayX = x + width / 2 - overlayWidth / 2;
-        const overlayY = y - overlayHeight - 10;
-  
-        // Draw the overlay image
-        context.drawImage(this.overlayImage, overlayX, overlayY, overlayWidth, overlayHeight);
+        // Position the overlay image based on the face position and accessory offsets
+        const overlayX = x + width / 2 - this.overlayImageWidth / 2;
+        const overlayY = y - this.overlayImageHeight - this.overlayImageOffset;
+
+        context.drawImage(this.overlayImage, overlayX, overlayY, this.overlayImageWidth, this.overlayImageHeight);
       });
-    }, 100);
-  }  
+    }, 1000);
+  }
 
   getTopExpression(expressions: faceapi.FaceExpressions): string {
     return Object.entries(expressions)
@@ -103,17 +111,34 @@ export class MirrorComponent implements OnInit {
   trackExpression(expression: string) {
     const now = Date.now();
 
+    // Check if there was a change in expression
     if (expression !== this.currentExpression) {
       this.currentExpression = expression;
-      this.expressionStartTime = now;
-    } else if (this.expressionStartTime && now - this.expressionStartTime >= 1000) {
-      this.isHappy = expression === 'happy';
-      this.isSad = expression === 'sad';
 
-      if (this.isHappy) this.isSad = false;
-      if (this.isSad) this.isHappy = false;
-
-      this.expressionStartTime = now;
+      // Check if the new expression is happy or sad
+      if (this.currentExpression === 'happy' || this.currentExpression === 'sad') {
+        this.updateOverlayImage();
+      }
     }
   }
+
+  private updateOverlayImage() {
+    const accessory = this.dataService.getNextAccessory(this.userDistance, this.currentExpression);
+    if (accessory) {
+      this.overlayImage.src = accessory.imageUrl;
+      this.overlayImageWidth = accessory.imageWidth || 100;  // Set default width if undefined
+      this.overlayImageHeight = accessory.imageHeight || 100; // Set default height if undefined
+      this.overlayImageOffset = accessory.imageOffset || 10;  // Set default offset if undefined
+    }
+  }
+}
+
+function proximityChange(previous: number, current: number) {
+  if (previous < PROXIMITY_THRESHOLD && current > PROXIMITY_THRESHOLD) {
+    return true;
+  }
+  if (previous > PROXIMITY_THRESHOLD && current < PROXIMITY_THRESHOLD) {
+    return true;
+  }
+  return false;
 }

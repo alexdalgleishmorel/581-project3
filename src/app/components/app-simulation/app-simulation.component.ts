@@ -11,6 +11,7 @@ import { DataService } from 'src/app/data.service';
 })
 export class AppSimulationComponent {
   public currentUser$: Observable<User>;
+  public Object = Object;
 
   constructor(private dataService: DataService) {
     this.currentUser$ = this.dataService.currentUser.asObservable();
