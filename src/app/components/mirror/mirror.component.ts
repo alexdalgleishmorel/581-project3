@@ -55,52 +55,59 @@ export class MirrorComponent implements OnInit {
     const canvas = this.overlay.nativeElement;
     const videoWidth = this.video.nativeElement.videoWidth;
     const videoHeight = this.video.nativeElement.videoHeight;
-  
+    
     canvas.width = videoWidth;
     canvas.height = videoHeight;
-  
+    
     const displaySize = { width: videoWidth, height: videoHeight };
     faceapi.matchDimensions(canvas, displaySize);
-  
+    
     const context = canvas.getContext('2d', { willReadFrequently: true });
-  
+    
     const referenceFaceWidth = 120; // Adjust based on your setup
     const referenceDistance = 100; // Reference distance in centimeters
+    let lastIdentityCheck = Date.now();
   
     setInterval(async () => {
       const detections = await faceapi
         .detectAllFaces(this.video.nativeElement, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors()
         .withFaceExpressions();
-  
+      
       context.clearRect(0, 0, canvas.width, canvas.height);
-  
+    
       detections.forEach(detection => {
-        const { expressions } = detection;
+        const { expressions, descriptor } = detection;
         const topExpression = this.getTopExpression(expressions);
   
-        // Track expression duration and set isHappy or isSad accordingly
+        // Perform identity check only every 3 seconds
+        const currentTime = Date.now();
+        let personId: string | undefined;
+        if (currentTime - lastIdentityCheck >= 3000) {
+          personId = this.dataService.getOrAssignId(descriptor);
+          lastIdentityCheck = currentTime;
+        }
+        
+        // Track expression and update overlay based on the expression
         this.trackExpression(topExpression);
-  
-        // Get the position and dimensions of the detected face
+    
+        // Calculate face position and estimated distance
         const { x, y, width } = detection.detection.box;
-  
-        // Estimate distance based on face width
         const newDistance = (referenceFaceWidth / width) * referenceDistance;
-
+  
         if (proximityChange(this.userDistance, newDistance)) {
           this.userDistance = newDistance;
           this.updateOverlayImage();
         }
-
-        this.userDistance = newDistance;
-  
-        // Position the overlay image based on the face position and accessory offsets
+    
+        // Position the overlay image based on face position and accessory offsets
         const overlayX = x + width / 2 - this.overlayImageWidth / 2;
         const overlayY = y - this.overlayImageHeight - this.overlayImageOffset;
-
+  
         context.drawImage(this.overlayImage, overlayX, overlayY, this.overlayImageWidth, this.overlayImageHeight);
       });
-    }, 1000);
+    }, 1000); // Run every second for expression detection and positioning
   }
 
   getTopExpression(expressions: faceapi.FaceExpressions): string {
