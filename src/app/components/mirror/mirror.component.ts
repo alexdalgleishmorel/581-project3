@@ -13,8 +13,6 @@ export class MirrorComponent implements OnInit {
   @ViewChild('video', { static: true }) video!: ElementRef;
   @ViewChild('overlay', { static: true }) overlay!: ElementRef;
 
-  isHappy = false;
-  isSad = false;
   userDistance = 0;
   private currentExpression: string | null = null;
   private overlayImage = new Image();
@@ -122,8 +120,10 @@ export class MirrorComponent implements OnInit {
     if (expression !== this.currentExpression) {
       this.currentExpression = expression;
 
-      // Check if the new expression is happy or sad
-      if (this.currentExpression === 'happy' || this.currentExpression === 'sad') {
+      console.log(this.currentExpression);
+
+      // Check if the new expression is happy or surprised
+      if (this.currentExpression === 'happy' || this.currentExpression === 'surprised') {
         this.updateOverlayImage();
       }
     }
@@ -133,9 +133,9 @@ export class MirrorComponent implements OnInit {
     const accessory = this.dataService.getNextAccessory(this.userDistance, this.currentExpression);
     if (accessory) {
       this.overlayImage.src = accessory.imageUrl;
-      this.overlayImageWidth = accessory.imageWidth || 100;  // Set default width if undefined
-      this.overlayImageHeight = accessory.imageHeight || 100; // Set default height if undefined
-      this.overlayImageOffset = accessory.imageOffset || 10;  // Set default offset if undefined
+      this.overlayImageWidth = accessory.imageWidth || 100;
+      this.overlayImageHeight = accessory.imageHeight || 100;
+      this.overlayImageOffset = accessory.imageOffset || 10;
     }
   }
 }

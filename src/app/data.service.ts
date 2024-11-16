@@ -17,7 +17,7 @@ export class DataService {
   public storedFaces = new Map<string, FaceDescriptor>();
 
   public getNextAccessory(proximity: number, expression: string | null): Accessory | void {
-    if (expression && (expression === 'happy' || expression === 'sad')) {
+    if (expression && (expression === 'happy' || expression === 'surprised')) {
       let updatedUser = this.currentUser.value;
 
       if (expression === 'happy') {
@@ -26,7 +26,7 @@ export class DataService {
         this.storedUsers.set(updatedUser.id, updatedUser);
       }
 
-      if (expression === 'sad') {
+      if (expression === 'surprised') {
         removeLikedAccessory(updatedUser, this.displayedAccessory.id);
         this.currentUser.next(updatedUser);
         this.storedUsers.set(updatedUser.id, updatedUser);
