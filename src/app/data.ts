@@ -6,7 +6,7 @@ export const CLOSE_ACCESSORIES: Accessory[] = [
         productUrl: 'https://ca.pitviper.com/products/the-money-counter-original?variant=47756566036756&utm_source=google&utm_medium=cpc&utm_campaign=google_performance_max_non_brand_canada-20938013200&utm_content=&utm_term=&gad_source=1&gclid=Cj0KCQiAouG5BhDBARIsAOc08RS4OLGphIAeZgFw1uZSd26_7S-ZHZV1Vpug---zKFLMGxfKyyzYGMkaAsnUEALw_wcB',
         imageWidth: 200,
         imageHeight: 75,
-        imageOffset: -115
+        imageOffset: -105
     },
     {
         id: 'another-chain',
