@@ -78,11 +78,11 @@ function* circularAccessoryGenerator(array: Accessory[]): Generator<Accessory, v
 }
 
 function addLikedAccessory(user: User, accessory: Accessory): void {
-  user.likedAccessories[accessory.id] = accessory; // Adds or updates the accessory by ID
+  user.likedAccessories[accessory.id] = accessory;
 }
 
 function removeLikedAccessory(user: User, accessoryId: string): void {
-  delete user.likedAccessories[accessoryId]; // Removes the accessory by ID
+  delete user.likedAccessories[accessoryId];
 }
 
 type FaceDescriptor = Float32Array;

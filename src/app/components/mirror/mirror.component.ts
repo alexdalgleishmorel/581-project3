@@ -62,8 +62,8 @@ export class MirrorComponent implements OnInit {
   
     const context = canvas.getContext('2d', { willReadFrequently: true });
   
-    const referenceFaceWidth = 120; // Adjust based on your setup
-    const referenceDistance = 100; // Reference distance in centimeters
+    const referenceFaceWidth = 120;
+    const referenceDistance = 100;
     let lastIdentityCheck = Date.now();
   
     setInterval(async () => {
@@ -78,20 +78,20 @@ export class MirrorComponent implements OnInit {
         return;
       }
   
-      // Identify the closest face
+      // Identifying the closest face
       const closestDetection = detections.reduce((closest, current) => {
         const closestWidth = closest.detection.box.width;
         const currentWidth = current.detection.box.width;
   
-        // A larger face box width corresponds to a closer distance
+        // Larger facebox corresponds to closer distance
         return currentWidth > closestWidth ? current : closest;
       });
   
-      // Process only the closest face
+      // Processing only the closest face
       const { expressions, descriptor } = closestDetection;
       const topExpression = this.getTopExpression(expressions);
   
-      // Perform identity check only every 3 seconds
+      // Performing identity check every 3 seconds
       const currentTime = Date.now();
       let personId: string | undefined;
       if (currentTime - lastIdentityCheck >= 3000) {
@@ -99,10 +99,10 @@ export class MirrorComponent implements OnInit {
         lastIdentityCheck = currentTime;
       }
   
-      // Track expression and update overlay based on the expression
+      // Tracking expression and updating overlay based on the expression
       this.trackExpression(topExpression);
   
-      // Calculate face position and estimated distance
+      // Calculating face position and estimated distance
       const { x, y, width } = closestDetection.detection.box;
       const newDistance = (referenceFaceWidth / width) * referenceDistance;
   
@@ -111,14 +111,14 @@ export class MirrorComponent implements OnInit {
         this.updateOverlayImage();
       }
   
-      // Clear the canvas and draw the overlay for the closest face
+      // Clearing the canvas and drawing the overlay for the closest face
       context.clearRect(0, 0, canvas.width, canvas.height);
   
       const overlayX = x + width / 2 - this.overlayImageWidth / 2;
       const overlayY = y - this.overlayImageHeight - this.overlayImageOffset;
   
       context.drawImage(this.overlayImage, overlayX, overlayY, this.overlayImageWidth, this.overlayImageHeight);
-    }, 1000); // Run every second for expression detection and positioning
+    }, 1000);
   }  
 
   getTopExpression(expressions: faceapi.FaceExpressions): string {
@@ -129,13 +129,13 @@ export class MirrorComponent implements OnInit {
   trackExpression(expression: string) {
     const now = Date.now();
 
-    // Check if there was a change in expression
+    // Checking if there was a change in expression
     if (expression !== this.currentExpression) {
       this.currentExpression = expression;
 
       console.log(this.currentExpression);
 
-      // Check if the new expression is happy or surprised
+      // Checking if the new expression is happy or surprised
       if (this.currentExpression === 'happy' || this.currentExpression === 'surprised') {
         this.updateOverlayImage();
       }
