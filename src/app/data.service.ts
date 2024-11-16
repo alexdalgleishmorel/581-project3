@@ -12,7 +12,7 @@ export class DataService {
   private nextPersionId = 1;
 
   public currentUser: BehaviorSubject<User> = new BehaviorSubject<User>({ id: '', name: '', likedAccessories: {} });
-  public displayedAccessory: Accessory = { id: '', name: '', imageUrl: '' };
+  public displayedAccessory: Accessory = { id: '', name: '', imageUrl: '', productUrl: '' };
   public storedUsers = new Map<string, User>();
   public storedFaces = new Map<string, FaceDescriptor>();
 
@@ -33,7 +33,7 @@ export class DataService {
       }
     }
 
-    let nextAccessory: Accessory = { id: '', name: '', imageUrl: '' };
+    let nextAccessory: Accessory = { id: '', name: '', imageUrl: '', productUrl: '' };
     if (proximity < PROXIMITY_THRESHOLD) {
       nextAccessory = this.closeAccessoryGenerator.next().value || nextAccessory;
     } else {
