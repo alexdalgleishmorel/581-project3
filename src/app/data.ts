@@ -1,6 +1,14 @@
 export const CLOSE_ACCESSORIES: Accessory[] = [
     {
-        id: 'sadgfdsg',
+        id: 'touque',
+        name: 'touque',
+        imageUrl: '/assets/accessories/close/touque.png',
+        imageWidth: 300,
+        imageHeight: 250,
+        imageOffset: -75
+    },
+    {
+        id: 'necklace',
         name: 'necklace',
         imageUrl: '/assets/accessories/close/gold-chain.png',
         imageWidth: 200,
@@ -8,7 +16,7 @@ export const CLOSE_ACCESSORIES: Accessory[] = [
         imageOffset: -250
     },
     {
-        id: 'ddsfgsdgsd',
+        id: 'cowboyhat',
         name: 'hat',
         imageUrl: '/assets/accessories/close/hat.png',
         imageWidth: 300,
@@ -16,7 +24,7 @@ export const CLOSE_ACCESSORIES: Accessory[] = [
         imageOffset: 0
     },
     {
-        id: 'asfgsdsv',
+        id: 'scarf',
         name: 'scarf',
         imageUrl: '/assets/accessories/close/scarf.png',
         imageWidth: 250,
