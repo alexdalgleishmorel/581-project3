@@ -29,7 +29,7 @@ export class MirrorComponent implements OnInit {
   }
 
   async loadModels() {
-    const modelPath = '/581-project3/assets/models';
+    const modelPath = '/assets/models';
     await faceapi.nets.tinyFaceDetector.loadFromUri(modelPath);
     await faceapi.nets.faceLandmark68Net.loadFromUri(modelPath);
     await faceapi.nets.faceRecognitionNet.loadFromUri(modelPath);
